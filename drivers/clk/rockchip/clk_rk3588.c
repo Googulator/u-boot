@@ -1083,7 +1083,8 @@ static ulong rk3588_dclk_vop_get_clk(struct rk3588_clk_priv *priv, ulong clk_id)
 	}
 
 	if (sel == DCLK_VOP_SRC_SEL_AUPLL)
-		parent = priv->aupll_hz;
+		parent = rockchip_pll_get_rate(&rk3588_pll_clks[AUPLL],
+					       priv->cru, AUPLL);
 	else if (sel == DCLK_VOP_SRC_SEL_V0PLL)
 		parent = rockchip_pll_get_rate(&rk3588_pll_clks[V0PLL],
 					       priv->cru, V0PLL);
@@ -1155,6 +1156,14 @@ static ulong rk3588_dclk_vop_set_clk(struct rk3588_clk_priv *priv,
 			     ((div - 1) << div_shift));
 		rockchip_pll_set_rate(&rk3588_pll_clks[V0PLL],
 				      priv->cru, V0PLL, div * rate);
+	} else if (sel == DCLK_VOP_SRC_SEL_AUPLL) {
+		div = DIV_ROUND_UP(RK3588_VOP_PLL_LIMIT_FREQ, rate);
+		rk_clrsetreg(&cru->clksel_con[conid],
+			     mask,
+			     DCLK_VOP_SRC_SEL_AUPLL << sel_shift |
+			     ((div - 1) << div_shift));
+		rockchip_pll_set_rate(&rk3588_pll_clks[AUPLL],
+				      priv->cru, AUPLL, div * rate);
 	} else {
 		for (i = 0; i <= DCLK_VOP_SRC_SEL_AUPLL; i++) {
 			switch (i) {
@@ -1165,7 +1174,7 @@ static ulong rk3588_dclk_vop_set_clk(struct rk3588_clk_priv *priv,
 				pll_rate = priv->cpll_hz;
 				break;
 			case DCLK_VOP_SRC_SEL_AUPLL:
-				pll_rate = priv->aupll_hz;
+				pll_rate = 0;
 				break;
 			case DCLK_VOP_SRC_SEL_V0PLL:
 				pll_rate = 0;
@@ -2035,6 +2044,11 @@ static void rk3588_clk_init(struct rk3588_clk_priv *priv)
 		     ACLK_TOP_S200_SEL_MASK,
 		     (ACLK_TOP_S400_SEL_400M << ACLK_TOP_S400_SEL_SHIFT) |
 		     (ACLK_TOP_S200_SEL_200M << ACLK_TOP_S200_SEL_SHIFT));
+
+	rk_clrsetreg(&priv->cru->clksel_con[118], 0x1 << 5, 0 << 5);
+	rk_clrsetreg(&priv->cru->clksel_con[120], 0x1 << 8, 0 << 8);
+	rk_clrsetreg(&priv->cru->clksel_con[122], 0x1 << 8, 0 << 8);
+	rk_clrsetreg(&priv->cru->clksel_con[124], 0x1 << 7, 0 << 7);
 }
 
 static int rk3588_clk_probe(struct udevice *dev)
