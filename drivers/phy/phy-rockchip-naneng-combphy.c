@@ -475,11 +475,22 @@ static int rk3588_combphy_cfg(struct rockchip_combphy_priv *priv)
 		/* Set PLL KVCO to min and set PLL charge pump current to max */
 		writel(0xf0, priv->mmio + (0xa << 2));
 
+		/* Set Rx squelch input filler bandwidth */
+		writel(0x0d, priv->mmio + (0x14 << 2));
+
 		param_write(priv->phy_grf, &cfg->pipe_txcomp_sel, false);
 		param_write(priv->phy_grf, &cfg->pipe_txelec_sel, false);
 		param_write(priv->phy_grf, &cfg->usb_mode_set, true);
 		break;
 	case PHY_TYPE_SATA:
+		/* Enable adaptive CTLE for SATA Rx */
+		val = readl(priv->mmio + (0x0e << 2));
+		val &= ~GENMASK(0, 0);
+		val |= 0x01;
+		writel(val, priv->mmio + (0x0e << 2));
+		/* Set tx_rterm = 50 ohm and rx_rterm = 43.5 ohm */
+		writel(0x8F, priv->mmio + (0x06 << 2));
+
 		param_write(priv->phy_grf, &cfg->con0_for_sata, true);
 		param_write(priv->phy_grf, &cfg->con1_for_sata, true);
 		param_write(priv->phy_grf, &cfg->con2_for_sata, true);
@@ -497,6 +508,25 @@ static int rk3588_combphy_cfg(struct rockchip_combphy_priv *priv)
 	/* 100MHz refclock signal is good */
 	clk_set_rate(&priv->ref_clk, 100000000);
 	param_write(priv->phy_grf, &cfg->pipe_clk_100m, true);
+	if (priv->mode == PHY_TYPE_PCIE) {
+		/* PLL KVCO tuning fine */
+		val = readl(priv->mmio + (0x20 << 2));
+		val &= ~GENMASK(4, 2);
+		val |= 0x4 << 2;
+		writel(val, priv->mmio + (0x20 << 2));
+
+		/* Set up rx_trim: PLL LPF C1 85pf R1 1.25kohm */
+		val = 0x4c;
+		writel(val, priv->mmio + (0x1b << 2));
+
+		/* Set up su_trim: T3 */
+		val = 0xb0;
+		writel(val, priv->mmio + (0xa << 2));
+		val = 0x47;
+		writel(val, priv->mmio + (0xb << 2));
+		val = 0x57;
+		writel(val, priv->mmio + (0xd << 2));
+	}
 
 	return 0;
 }
@@ -520,7 +550,7 @@ static const struct rockchip_combphy_grfcfg rk3588_combphy_grfcfgs = {
 	.con2_for_pcie		= { 0x0008, 15, 0, 0x00, 0x0101 },
 	.con3_for_pcie		= { 0x000c, 15, 0, 0x00, 0x0200 },
 	.con0_for_sata		= { 0x0000, 15, 0, 0x00, 0x0129 },
-	.con1_for_sata		= { 0x0004, 15, 0, 0x00, 0x0040 },
+	.con1_for_sata		= { 0x0004, 15, 0, 0x00, 0x0000 },
 	.con2_for_sata		= { 0x0008, 15, 0, 0x00, 0x80c1 },
 	.con3_for_sata		= { 0x000c, 15, 0, 0x00, 0x0407 },
 	/* pipe-grf */

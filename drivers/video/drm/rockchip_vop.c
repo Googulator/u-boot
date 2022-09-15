@@ -63,6 +63,14 @@ static bool is_yuv_output(uint32_t bus_format)
 	case MEDIA_BUS_FMT_YUV10_1X30:
 	case MEDIA_BUS_FMT_UYYVYY8_0_5X24:
 	case MEDIA_BUS_FMT_UYYVYY10_0_5X30:
+	case MEDIA_BUS_FMT_YUYV8_2X8:
+	case MEDIA_BUS_FMT_YVYU8_2X8:
+	case MEDIA_BUS_FMT_UYVY8_2X8:
+	case MEDIA_BUS_FMT_VYUY8_2X8:
+	case MEDIA_BUS_FMT_YUYV8_1X16:
+	case MEDIA_BUS_FMT_YVYU8_1X16:
+	case MEDIA_BUS_FMT_UYVY8_1X16:
+	case MEDIA_BUS_FMT_VYUY8_1X16:
 		return true;
 	default:
 		return false;
@@ -664,12 +672,12 @@ static int rockchip_vop_set_plane(struct display_state *state)
 	struct drm_display_mode *mode = &conn_state->mode;
 	u32 act_info, dsp_info, dsp_st, dsp_stx, dsp_sty;
 	struct vop *vop = crtc_state->private;
-	int src_w = crtc_state->src_w;
-	int src_h = crtc_state->src_h;
-	int crtc_x = crtc_state->crtc_x;
-	int crtc_y = crtc_state->crtc_y;
-	int crtc_w = crtc_state->crtc_w;
-	int crtc_h = crtc_state->crtc_h;
+	int src_w = crtc_state->src_rect.w;
+	int src_h = crtc_state->src_rect.h;
+	int crtc_x = crtc_state->crtc_rect.x;
+	int crtc_y = crtc_state->crtc_rect.y;
+	int crtc_w = crtc_state->crtc_rect.w;
+	int crtc_h = crtc_state->crtc_rect.h;
 	int xvir = crtc_state->xvir;
 	int x_mirror = 0, y_mirror = 0;
 
@@ -835,6 +843,48 @@ static int rockchip_vop_send_mcu_cmd(struct display_state *state,
 	return 0;
 }
 
+static int rockchip_vop_mode_valid(struct display_state *state)
+{
+	struct connector_state *conn_state = &state->conn_state;
+	struct drm_display_mode *mode = &conn_state->mode;
+	struct videomode vm;
+
+	drm_display_mode_to_videomode(mode, &vm);
+
+	if (vm.hactive < 32 || vm.vactive < 32 ||
+	    (vm.hfront_porch * vm.hsync_len * vm.hback_porch *
+	     vm.vfront_porch * vm.vsync_len * vm.vback_porch == 0)) {
+		printf("ERROR: unsupported display timing\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int rockchip_vop_plane_check(struct display_state *state)
+{
+	struct crtc_state *crtc_state = &state->crtc_state;
+	const struct rockchip_crtc *crtc = crtc_state->crtc;
+	const struct vop_data *vop_data = crtc->data;
+	const struct vop_win *win = vop_data->win;
+	struct display_rect *src = &crtc_state->src_rect;
+	struct display_rect *dst = &crtc_state->crtc_rect;
+	int min_scale, max_scale;
+	int hscale, vscale;
+
+	min_scale = win->scl ? FRAC_16_16(1, 8) : VOP_PLANE_NO_SCALING;
+	max_scale = win->scl ? FRAC_16_16(8, 1) : VOP_PLANE_NO_SCALING;
+
+	hscale = display_rect_calc_hscale(src, dst, min_scale, max_scale);
+	vscale = display_rect_calc_vscale(src, dst, min_scale, max_scale);
+	if (hscale < 0 || vscale < 0) {
+		printf("ERROR: scale factor is out of range\n");
+		return -ERANGE;
+	}
+
+	return 0;
+}
+
 const struct rockchip_crtc_funcs rockchip_vop_funcs = {
 	.preinit = rockchip_vop_preinit,
 	.init = rockchip_vop_init,
@@ -844,4 +894,6 @@ const struct rockchip_crtc_funcs rockchip_vop_funcs = {
 	.disable = rockchip_vop_disable,
 	.fixup_dts = rockchip_vop_fixup_dts,
 	.send_mcu_cmd = rockchip_vop_send_mcu_cmd,
+	.mode_valid = rockchip_vop_mode_valid,
+	.plane_check = rockchip_vop_plane_check,
 };
