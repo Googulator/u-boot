@@ -432,8 +432,10 @@ re_init_retry:
 			}
 
 			mmc->has_init = 0;
-			if (mmc_init(mmc))
-				return 0;
+			if (mmc_init(mmc)) {
+				printf("%s: mmc_init error\n", __func__);
+				goto re_init_retry;
+			}
 
 			if (mmc_read_blocks(mmc, dst, start, cur) != cur) {
 				printf("%s: Re-init mmc_read_blocks error\n",
