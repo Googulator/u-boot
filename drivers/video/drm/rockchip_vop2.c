@@ -2972,6 +2972,9 @@ static int rockchip_vop2_init(struct display_state *state)
 		debug("%s: Faile to find display-subsystem node\n", __func__);
 	}
 
+	hdmi0_phy_pll.dev = NULL;
+	hdmi1_phy_pll.dev = NULL;
+
 	if (mode->crtc_clock < VOP2_MAX_DCLK_RATE) {
 		if (conn_state->output_if & VOP_OUTPUT_IF_HDMI0)
 			vop2_clk_set_parent(&dclk, &hdmi0_phy_pll);
