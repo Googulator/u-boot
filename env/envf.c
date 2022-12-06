@@ -251,6 +251,7 @@ static int envf_init_vars(void)
 			envf_list[envf_num++] = p;
 		}
 
+		envf_list[envf_num++] = p;
 		p = strtok(NULL, " ");
 	}
 

@@ -44,6 +44,10 @@ struct rv1106_clk_priv {
 	bool set_armclk_rate;
 };
 
+struct rv1106_grf_clk_priv {
+	struct rv1106_grf *grf;
+};
+
 struct rv1106_pll {
 	unsigned int con0;
 	unsigned int con1;
@@ -91,20 +95,21 @@ struct rv1106_cru {
 	unsigned int vi_clkgate_con[3];
 	unsigned int reserved14[125];
 	unsigned int vi_softrst_con[3];
-	unsigned int reserved15[5693];
+	unsigned int reserved15[3645];
+	unsigned int core_clksel_con[5];
+	unsigned int reserved16[2043];
 	unsigned int vepu_clksel_con[2];
-	unsigned int reserved16[318];
+	unsigned int reserved17[318];
 	unsigned int vepu_clkgate_con[3];
-	unsigned int reserved17[125];
+	unsigned int reserved18[125];
 	unsigned int vepu_softrst_con[2];
-	unsigned int reserved18[1598];
+	unsigned int reserved19[1598];
 	unsigned int vo_clksel_con[4];
-	unsigned int reserved19[316];
+	unsigned int reserved20[316];
 	unsigned int vo_clkgate_con[3];
-	unsigned int reserved20[125];
+	unsigned int reserved21[125];
 	unsigned int vo_softrst_con[4];
 };
-
 check_member(rv1106_cru, vo_softrst_con[0], 0x1ca00);
 
 struct pll_rate_table {
@@ -233,6 +238,12 @@ enum {
 	CLK_SPI1_SEL_MASK		= 0x3 << CLK_SPI1_SEL_SHIFT,
 
 	/* CRU_PERI_CLK_SEL7_CON */
+	DCLK_DECOM_SEL_SHIFT		= 14,
+	DCLK_DECOM_SEL_MASK		= 0x3 << DCLK_DECOM_SEL_SHIFT,
+	DCLK_DECOM_SEL_400M		= 0,
+	DCLK_DECOM_SEL_200M,
+	DCLK_DECOM_SEL_100M,
+	DCLK_DECOM_SEL_24M,
 	CLK_SFC_SEL_SHIFT		= 12,
 	CLK_SFC_SEL_MASK		= 0x3 << CLK_SFC_SEL_SHIFT,
 	CLK_SFC_SEL_500M		= 0,
@@ -267,6 +278,10 @@ enum {
 	CLK_SPI0_SEL_100M,
 	CLK_SPI0_SEL_50M,
 	CLK_SPI0_SEL_24M,
+
+	/* CRU_CORE_CLK_SEL0_CON */
+	CLK_CORE_DIV_SHIFT		= 0,
+	CLK_CORE_DIV_MASK		= 0x1f << CLK_CORE_DIV_SHIFT,
 
 	/* CRU_VI_CLK_SEL1_CON */
 	CLK_SDMMC_SEL_SHIFT		= 14,

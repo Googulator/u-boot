@@ -1631,6 +1631,13 @@ static int dw_dp_connector_get_timing(struct rockchip_connector *conn, struct di
 			goto err;
 		}
 
+                ret = dw_dp_link_probe(dp);
+                if (ret) {
+                        printf("failed to probe DP link: %d\n", ret);
+                        ret = -EINVAL;
+                        goto err;
+                }
+
 		drm_rk_filter_whitelist(&edid_data);
 		if (state->conn_state.secondary) {
 			rect.width = state->crtc_state.max_output.width / 2;

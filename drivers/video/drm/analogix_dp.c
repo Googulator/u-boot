@@ -22,6 +22,7 @@
 #include "rockchip_display.h"
 #include "rockchip_crtc.h"
 #include "rockchip_connector.h"
+#include "rockchip_panel.h"
 #include "analogix_dp.h"
 
 #define RK3588_GRF_VO1_CON0	0x0000
@@ -920,6 +921,9 @@ static int analogix_dp_connector_disable(struct rockchip_connector *conn,
 	if (!analogix_dp_get_plug_in_status(dp))
 		analogix_dp_link_power_down(dp);
 
+	if (!analogix_dp_get_plug_in_status(dp))
+		analogix_dp_link_power_down(dp);
+
 	if (pdata->chip_type == RK3588_EDP)
 		regmap_write(dp->grf, dp->id ? RK3588_GRF_VO1_CON1 : RK3588_GRF_VO1_CON0,
 			     EDP_MODE << 16 | FIELD_PREP(EDP_MODE, 0));
@@ -930,9 +934,36 @@ static int analogix_dp_connector_disable(struct rockchip_connector *conn,
 static int analogix_dp_connector_detect(struct rockchip_connector *conn,
 					struct display_state *state)
 {
+	struct panel_state *panel_state = &state->panel_state;
 	struct analogix_dp_device *dp = dev_get_priv(conn->dev);
+	int ret;
 
-	return analogix_dp_detect(dp);
+	if (panel_state->panel)
+		rockchip_panel_prepare(panel_state->panel);
+
+	if (!analogix_dp_detect(dp))
+		goto unprepare_panel;
+
+	ret = analogix_dp_read_byte_from_dpcd(dp, DP_MAX_LINK_RATE,
+					      &dp->link_train.link_rate);
+	if (ret < 0) {
+		dev_err(dp->dev, "failed to read link rate: %d\n", ret);
+		goto unprepare_panel;
+	}
+
+	ret = analogix_dp_read_byte_from_dpcd(dp, DP_MAX_LANE_COUNT,
+					      &dp->link_train.lane_count);
+	if (ret < 0) {
+		dev_err(dp->dev, "failed to read lane count: %d\n", ret);
+		goto unprepare_panel;
+	}
+
+	return true;
+
+unprepare_panel:
+	if (panel_state->panel)
+		rockchip_panel_unprepare(panel_state->panel);
+	return false;
 }
 
 static const struct rockchip_connector_funcs analogix_dp_connector_funcs = {

@@ -1527,7 +1527,6 @@ static int rv1106_grfclk_set_phase(struct clk *clk, int degrees)
 	switch (clk->id) {
 	case SCLK_EMMC_SAMPLE:
 	case SCLK_SDMMC_SAMPLE:
-	case SCLK_SDIO_SAMPLE:
 		ret = rv1106_mmc_set_phase(clk, degrees);
 		break;
 	default:

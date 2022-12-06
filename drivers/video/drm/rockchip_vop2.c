@@ -2962,14 +2962,14 @@ static int rockchip_vop2_init(struct display_state *state)
 	if (!ret) {
 		ret = clk_get_by_name(disp_dev, "hdmi0_phy_pll", &hdmi0_phy_pll);
 		if (ret)
-			debug("%s: hdmi0_phy_pll may not define\n", __func__);
+			printf("%s: Failed to get hdmi0_phy_pll ret=%d\n", __func__, ret);
 		ret = clk_get_by_name(disp_dev, "hdmi1_phy_pll", &hdmi1_phy_pll);
 		if (ret)
-			debug("%s: hdmi1_phy_pll may not define\n", __func__);
+			printf("%s: Failed to get hdmi1_phy_pll ret=%d\n", __func__, ret);
 	} else {
 		hdmi0_phy_pll.dev = NULL;
 		hdmi1_phy_pll.dev = NULL;
-		debug("%s: Faile to find display-subsystem node\n", __func__);
+		printf("%s: Faile to find display-subsystem node\n", __func__);
 	}
 
 	hdmi0_phy_pll.dev = NULL;
@@ -4080,7 +4080,7 @@ static struct vop2_dsc_data rk3588_dsc_data[] = {
 		.pd_id = VOP2_PD_DSC_8K,
 		.max_slice_num = 8,
 		.max_linebuf_depth = 11,
-		.min_bits_per_pixel = 8,
+		.min_bits_per_pixel = 9,
 		.dsc_txp_clk_src_name = "dsc_8k_txp_clk_src",
 		.dsc_txp_clk_name = "dsc_8k_txp_clk",
 		.dsc_pxl_clk_name = "dsc_8k_pxl_clk",
@@ -4092,7 +4092,7 @@ static struct vop2_dsc_data rk3588_dsc_data[] = {
 		.pd_id = VOP2_PD_DSC_4K,
 		.max_slice_num = 2,
 		.max_linebuf_depth = 11,
-		.min_bits_per_pixel = 8,
+		.min_bits_per_pixel = 9,
 		.dsc_txp_clk_src_name = "dsc_4k_txp_clk_src",
 		.dsc_txp_clk_name = "dsc_4k_txp_clk",
 		.dsc_pxl_clk_name = "dsc_4k_pxl_clk",

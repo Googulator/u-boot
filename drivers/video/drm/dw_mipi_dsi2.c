@@ -1193,6 +1193,11 @@ static int dw_mipi_dsi2_get_dsc_params_from_sink(struct dw_mipi_dsi2 *dsi2)
 	u8 *dsc_packed_pps;
 	const void *data;
 	int len;
+	int ret;
+
+	ret = device_find_first_child(dsi2->dev, &dev);
+	if (ret)
+		return ret;
 
 	dsi2->c_option = dev_read_bool(dev, "phy-c-option");
 	dsi2->scrambling_en = dev_read_bool(dev, "scrambling-enable");

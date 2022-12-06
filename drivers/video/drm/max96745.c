@@ -28,8 +28,26 @@ static bool max96745_bridge_detect(struct rockchip_bridge *bridge)
 	return true;
 }
 
+static void max96745_bridge_enable(struct rockchip_bridge *bridge)
+{
+	struct udevice *dev = bridge->dev;
+
+	dm_i2c_reg_clrset(dev->parent, 0x0100, VID_TX_EN,
+			  FIELD_PREP(VID_TX_EN, 1));
+}
+
+static void max96745_bridge_disable(struct rockchip_bridge *bridge)
+{
+	struct udevice *dev = bridge->dev;
+
+	dm_i2c_reg_clrset(dev->parent, 0x0100, VID_TX_EN,
+			  FIELD_PREP(VID_TX_EN, 0));
+}
+
 static const struct rockchip_bridge_funcs max96745_bridge_funcs = {
 	.detect = max96745_bridge_detect,
+	.enable = max96745_bridge_enable,
+	.disable = max96745_bridge_disable,
 };
 
 static int max96745_bridge_probe(struct udevice *dev)
@@ -44,6 +62,12 @@ static int max96745_bridge_probe(struct udevice *dev)
 		dev_err(dev, "failed to get lock GPIO: %d\n", ret);
 		return ret;
 	}
+
+	dm_i2c_reg_write(dev->parent, 0x7019, 0x00);
+	dm_i2c_reg_write(dev->parent, 0x70a0, 0x04);
+	dm_i2c_reg_write(dev->parent, 0x7074, 0x14);
+	dm_i2c_reg_write(dev->parent, 0x7070, 0x04);
+	dm_i2c_reg_write(dev->parent, 0x7000, 0x01);
 
 	bridge = calloc(1, sizeof(*bridge));
 	if (!bridge)
