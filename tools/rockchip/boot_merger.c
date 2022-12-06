@@ -697,7 +697,7 @@ static inline uint32_t convertChipType(const char *chip)
 {
 	char buffer[5];
 	memset(buffer, 0, sizeof(buffer));
-	snprintf(buffer, sizeof(buffer), "%s", chip);
+	snprintf(buffer, sizeof(buffer), "%.*s", (int) (sizeof(buffer) - 1), chip);
 	return buffer[0] << 24 | buffer[1] << 16 | buffer[2] << 8 | buffer[3];
 }
 
@@ -892,7 +892,7 @@ static inline void wide2str(const uint16_t *wide, char *str, int len)
 	for (i = 0; i < len; i++) {
 		str[i] = (char)(wide[i] & 0xFF);
 	}
-	str[len] = 0;
+	str[len - 1] = 0;
 }
 
 static bool unpackEntry(rk_boot_entry *entry, const char *name, FILE *inFile)

@@ -14,7 +14,7 @@ DECLARE_GLOBAL_DATA_PTR;
 static struct dwc3_device dwc3_device_data = {
 	.maximum_speed = USB_SPEED_HIGH,
 	.base = 0xfc000000,
-	.dr_mode = USB_DR_MODE_PERIPHERAL,
+	.dr_mode = USB_DR_MODE_HOST,
 	.index = 0,
 	.dis_u2_susphy_quirk = 1,
 	.usb2_phyif_utmi_width = 16,

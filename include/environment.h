@@ -61,6 +61,30 @@
 # endif
 #endif	/* CONFIG_ENV_IS_IN_FLASH */
 
+#if defined(CONFIG_ENV_IS_IN_SPI_FLASH)
+# if defined(CONFIG_ENV_SECT_SIZE) || defined(CONFIG_ENV_SIZE)
+#  ifndef       CONFIG_ENV_SECT_SIZE
+#   define      CONFIG_ENV_SECT_SIZE    CONFIG_ENV_SIZE
+#  endif
+#  ifndef       CONFIG_ENV_SIZE
+#   define      CONFIG_ENV_SIZE CONFIG_ENV_SECT_SIZE
+#  endif
+# else
+#  error "Both CONFIG_ENV_SECT_SIZE and CONFIG_ENV_SIZE undefined"
+# endif
+# if defined(CONFIG_ENV_ADDR_REDUND) && !defined(CONFIG_ENV_SIZE_REDUND)
+#  define CONFIG_ENV_SIZE_REDUND        CONFIG_ENV_SIZE
+# endif
+# if defined(CONFIG_ENV_ADDR_REDUND) || defined(CONFIG_ENV_OFFSET_REDUND)
+#  define CONFIG_SYS_REDUNDAND_ENVIRONMENT
+# endif
+# ifdef CONFIG_ENV_IS_EMBEDDED
+#  error "do not define CONFIG_ENV_IS_EMBEDDED in your board config"
+#  error "it is calculated automatically for you"
+# endif
+#endif  /* CONFIG_ENV_IS_IN_SPI_FLASH */
+
+
 #if defined(CONFIG_ENV_IS_IN_MMC)
 # ifdef CONFIG_ENV_OFFSET_REDUND
 #  define CONFIG_SYS_REDUNDAND_ENVIRONMENT

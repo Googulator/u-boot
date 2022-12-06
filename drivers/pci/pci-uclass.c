@@ -475,7 +475,7 @@ int dm_pci_clrset_config32(struct udevice *dev, int offset, u32 clr, u32 set)
 static void set_vga_bridge_bits(struct udevice *dev)
 {
 	struct udevice *parent = dev->parent;
-	u16 bc;
+	u16 bc = 0;
 
 	while (parent->seq != 0) {
 		dm_pci_read_config16(parent, PCI_BRIDGE_CONTROL, &bc);
@@ -1075,7 +1075,7 @@ int pci_get_regions(struct udevice *dev, struct pci_region **iop,
 
 u32 dm_pci_read_bar32(struct udevice *dev, int barnum)
 {
-	u32 addr;
+	u32 addr = 0;
 	int bar;
 
 	bar = PCI_BASE_ADDRESS_0 + barnum * 4;
@@ -1214,7 +1214,7 @@ pci_addr_t dm_pci_phys_to_bus(struct udevice *dev, phys_addr_t phys_addr,
 void *dm_pci_map_bar(struct udevice *dev, int bar, int flags)
 {
 	pci_addr_t pci_bus_addr;
-	u32 bar_response;
+	u32 bar_response = 0;
 
 	/* read BAR address */
 	dm_pci_read_config32(dev, bar, &bar_response);
@@ -1277,7 +1277,7 @@ U_BOOT_DRIVER(pci_generic_drv) = {
 
 void pci_init(void)
 {
-	struct udevice *bus;
+	struct udevice *bus = NULL;
 
 	/*
 	 * Enumerate all known controller devices. Enumeration has the side-
