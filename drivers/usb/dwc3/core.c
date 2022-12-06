@@ -869,7 +869,7 @@ void dwc3_uboot_handle_interrupt(int index)
 		if (dwc->index != index)
 			continue;
 
-		dwc3_gadget_uboot_handle_interrupt(dwc);
+//		dwc3_gadget_uboot_handle_interrupt(dwc);
 		break;
 	}
 }

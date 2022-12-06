@@ -48,8 +48,8 @@
 
 #ifndef CONFIG_SPL_BUILD
 /* usb mass storage */
-#define CONFIG_USB_FUNCTION_MASS_STORAGE
-#define CONFIG_ROCKUSB_G_DNL_PID	0x350b
+/*#define CONFIG_USB_FUNCTION_MASS_STORAGE*/
+/*#define CONFIG_ROCKUSB_G_DNL_PID	0x350b*/
 
 /*
  * decompressed kernel:  4M ~ 84M
